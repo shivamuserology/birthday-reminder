@@ -2,7 +2,7 @@
 // Birthday Reminder — Frontend Logic (Clean UI)
 // ═══════════════════════════════════════════
 
-const API = 'https://birthday-reminder.up.railway.app';
+const API = '';
 
 // ── State ────────────────────────────────
 let allBirthdays = [];
