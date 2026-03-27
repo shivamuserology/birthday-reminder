@@ -187,7 +187,7 @@ function renderBirthdays(birthdays) {
 
   birthdayList.innerHTML = sorted.map(b => {
     const initials = getInitials(b.name);
-    const badge = b.daysUntil === 0 ? '<span class="badge badge-tomorrow">Today</span>' : (b.daysUntil <= 7 ? \`<span class="badge badge-upcoming">\${b.daysUntil} days</span>\` : '');
+    const badge = b.daysUntil === 0 ? '<span class="badge badge-tomorrow">Today</span>' : (b.daysUntil <= 7 ? `<span class="badge badge-upcoming">${b.daysUntil} days</span>` : '');
     
     return `
       <div class="list-item">
@@ -196,7 +196,7 @@ function renderBirthdays(birthdays) {
           <div class="item-title">${escapeHtml(b.name)}</div>
           <div class="item-meta">
             <span>${formatDate(b.dob)}</span>
-            ${b.relationship ? \`<span class="dot"></span><span>\${escapeHtml(b.relationship)}</span>\` : ''}
+            ${b.relationship ? `<span class="dot"></span><span>${escapeHtml(b.relationship)}</span>` : ''}
           </div>
         </div>
         ${badge}
