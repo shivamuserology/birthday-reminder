@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Reminder — Never Forget a Birthday</title>
+  <meta name="description" content="A lightweight birthday reminder app that sends personalized email notifications before every birthday.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Background Orbs -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header class="header" id="header">
+      <div class="header-content">
+        <div class="logo">
+          <span class="logo-icon">🎂</span>
+          <div>
+            <h1>Birthday Reminder</h1>
+            <p class="tagline">Never forget a birthday again</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-ghost" id="btn-test-email" title="Send a test email">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            Test Email
+          </button>
+          <button class="btn btn-ghost" id="btn-check-now" title="Manually check for tomorrow's birthdays">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            Check Now
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Stats Row -->
+    <section class="stats-row" id="stats-row">
+      <div class="stat-card" id="stat-total">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <span class="stat-number">0</span>
+          <span class="stat-label">Total Birthdays</span>
+        </div>
+      </div>
+      <div class="stat-card" id="stat-upcoming">
+        <div class="stat-icon">📅</div>
+        <div class="stat-info">
+          <span class="stat-number">0</span>
+          <span class="stat-label">Next 30 Days</span>
+        </div>
+      </div>
+      <div class="stat-card" id="stat-this-month">
+        <div class="stat-icon">🎉</div>
+        <div class="stat-info">
+          <span class="stat-number">0</span>
+          <span class="stat-label">This Month</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Content Grid -->
+    <div class="main-grid">
+
+      <!-- Left Column: Add Form + Upcoming -->
+      <div class="left-column">
+
+        <!-- Add Birthday Card -->
+        <div class="card" id="add-birthday-card">
+          <div class="card-header">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Birthday
+            </h2>
+          </div>
+          <form id="birthday-form">
+            <div class="form-group">
+              <label for="input-name">Name</label>
+              <input type="text" id="input-name" placeholder="e.g. Rahul Sharma" required autocomplete="off">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="input-dob">Date of Birth</label>
+                <input type="date" id="input-dob" required>
+              </div>
+              <div class="form-group">
+                <label for="input-relationship">Relationship</label>
+                <input type="text" id="input-relationship" placeholder="e.g. college friend" autocomplete="off">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-submit">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Birthday
+            </button>
+          </form>
+        </div>
+
+        <!-- Upcoming Birthdays Card -->
+        <div class="card" id="upcoming-card">
+          <div class="card-header">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Upcoming Birthdays
+            </h2>
+          </div>
+          <div id="upcoming-list" class="upcoming-list">
+            <div class="empty-state">
+              <span class="empty-icon">🎈</span>
+              <p>No upcoming birthdays in the next 30 days</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: All Birthdays -->
+      <div class="right-column">
+        <div class="card" id="all-birthdays-card">
+          <div class="card-header">
+            <h2>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              All Birthdays
+            </h2>
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="search-input" placeholder="Search by name...">
+            </div>
+          </div>
+          <div id="birthday-list" class="birthday-list">
+            <div class="empty-state">
+              <span class="empty-icon">🎂</span>
+              <p>No birthdays added yet</p>
+              <p class="empty-sub">Add your first birthday using the form</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div class="modal-overlay" id="edit-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Edit Birthday</h3>
+        <button class="btn-close" id="btn-close-modal">&times;</button>
+      </div>
+      <form id="edit-form">
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+          <label for="edit-name">Name</label>
+          <input type="text" id="edit-name" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="edit-dob">Date of Birth</label>
+            <input type="date" id="edit-dob" required>
+          </div>
+          <div class="form-group">
+            <label for="edit-relationship">Relationship</label>
+            <input type="text" id="edit-relationship">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="btn-cancel-edit">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

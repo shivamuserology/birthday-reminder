@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: birthday-reminder
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: SENDER_NAME
+        sync: false
+      - key: REMINDER_EMAIL
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        sync: false
+      - key: SENDGRID_FROM_NAME
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
