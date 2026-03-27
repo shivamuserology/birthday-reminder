@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════
-// Birthday Reminder — Frontend Logic
+// Birthday Reminder — Frontend Logic (Clean UI)
 // ═══════════════════════════════════════════
 
 const API = '';
@@ -17,10 +17,9 @@ const birthdayList = document.getElementById('birthday-list');
 const upcomingList = document.getElementById('upcoming-list');
 const toast = document.getElementById('toast');
 
-// Stats
-const statTotal = document.querySelector('#stat-total .stat-number');
-const statUpcoming = document.querySelector('#stat-upcoming .stat-number');
-const statThisMonth = document.querySelector('#stat-this-month .stat-number');
+const statTotal = document.getElementById('stat-total');
+const statUpcoming = document.getElementById('stat-upcoming');
+const statThisMonth = document.getElementById('stat-this-month');
 
 // ── Initialize ───────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -38,12 +37,9 @@ function setupEventListeners() {
   document.getElementById('btn-close-modal').addEventListener('click', closeModal);
   document.getElementById('btn-cancel-edit').addEventListener('click', closeModal);
 
-  // Close modal on overlay click
   editModal.addEventListener('click', (e) => {
     if (e.target === editModal) closeModal();
   });
-
-  // Close modal on Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeModal();
   });
@@ -74,7 +70,7 @@ async function handleAddBirthday(e) {
 
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
-  btn.innerHTML = '<span class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></span>';
+  btn.textContent = 'Saving...';
 
   try {
     const res = await fetch(`${API}/api/birthdays`, {
@@ -83,16 +79,16 @@ async function handleAddBirthday(e) {
       body: JSON.stringify({ name, dob, relationship }),
     });
 
-    if (!res.ok) throw new Error('Failed to add birthday');
+    if (!res.ok) throw new Error('Failed to add contact');
 
     birthdayForm.reset();
     await loadBirthdays();
-    showToast(`🎂 Added ${name}'s birthday!`, 'success');
+    showToast(`Added ${name}`);
   } catch (error) {
     showToast(error.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Birthday`;
+    btn.textContent = 'Add Contact';
   }
 }
 
@@ -115,19 +111,19 @@ async function handleEditBirthday(e) {
 
     closeModal();
     await loadBirthdays();
-    showToast(`✅ Updated ${name}'s birthday`, 'success');
+    showToast(`Updated ${name}`);
   } catch (error) {
     showToast(error.message, 'error');
   }
 }
 
 async function handleDelete(id, name) {
-  if (!confirm(`Are you sure you want to delete ${name}'s birthday?`)) return;
+  if (!confirm(`Are you sure you want to delete ${name}?`)) return;
 
   try {
     await fetch(`${API}/api/birthdays/${id}`, { method: 'DELETE' });
     await loadBirthdays();
-    showToast(`Deleted ${name}'s birthday`, 'success');
+    showToast(`Deleted ${name}`);
   } catch (error) {
     showToast('Failed to delete', 'error');
   }
@@ -135,11 +131,9 @@ async function handleDelete(id, name) {
 
 async function handleSearch() {
   const query = searchInput.value.trim();
-
   try {
-    const res = await fetch(`${API}/api/birthdays${query ? `?q=${encodeURIComponent(query)}` : ''}`);
-    const data = await res.json();
-    renderBirthdays(data);
+    const res = await fetch(`${API}/api/birthdays${query ? '?q=' + encodeURIComponent(query) : ''}`);
+    renderBirthdays(await res.json());
   } catch (error) {
     console.error('Search error:', error);
   }
@@ -148,17 +142,13 @@ async function handleSearch() {
 async function handleTestEmail() {
   const btn = document.getElementById('btn-test-email');
   btn.disabled = true;
-
   try {
     const res = await fetch(`${API}/api/test-email`, { method: 'POST' });
     const data = await res.json();
-    if (data.success) {
-      showToast('✅ Test email sent! Check your inbox', 'success');
-    } else {
-      showToast(`❌ ${data.error}`, 'error');
-    }
+    if (data.success) showToast('Test email triggered', 'success');
+    else showToast('Failed test email', 'error');
   } catch (error) {
-    showToast('Failed to send test email', 'error');
+    showToast('Failed to test email', 'error');
   } finally {
     btn.disabled = false;
   }
@@ -167,15 +157,11 @@ async function handleTestEmail() {
 async function handleCheckNow() {
   const btn = document.getElementById('btn-check-now');
   btn.disabled = true;
-
   try {
     const res = await fetch(`${API}/api/check-birthdays`, { method: 'POST' });
     const data = await res.json();
-    if (data.reminders > 0) {
-      showToast(`🎂 Found ${data.reminders} birthday(s) tomorrow! Emails sent.`, 'success');
-    } else {
-      showToast('😴 No birthdays tomorrow', 'success');
-    }
+    if (data.reminders > 0) showToast(`Found ${data.reminders} tomorrow. Emails sent.`, 'success');
+    else showToast('No birthdays tomorrow.', 'success');
   } catch (error) {
     showToast('Failed to check', 'error');
   } finally {
@@ -187,124 +173,92 @@ async function handleCheckNow() {
 
 function renderBirthdays(birthdays) {
   if (birthdays.length === 0) {
-    const isSearching = searchInput.value.trim().length > 0;
     birthdayList.innerHTML = `
       <div class="empty-state">
-        <span class="empty-icon">${isSearching ? '🔍' : '🎂'}</span>
-        <p>${isSearching ? 'No birthdays match your search' : 'No birthdays added yet'}</p>
-        ${!isSearching ? '<p class="empty-sub">Add your first birthday using the form</p>' : ''}
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <p>Directory empty</p>
+        <div class="sub">No contacts added yet.</div>
       </div>
     `;
     return;
   }
 
-  // Sort by days until next birthday
   const sorted = [...birthdays].sort((a, b) => a.daysUntil - b.daysUntil);
 
-  birthdayList.innerHTML = sorted
-    .map((b) => {
-      const avatar = getAvatarColor(b.name);
-      const initials = getInitials(b.name);
-      const formattedDob = formatDate(b.dob);
-      const badge = getBadge(b.daysUntil);
-      const age = getAge(b.dob);
-
-      return `
-        <div class="birthday-item" data-id="${b.id}">
-          <div class="birthday-avatar" style="background: ${avatar};">${initials}</div>
-          <div class="birthday-info">
-            <div class="birthday-name">${escapeHtml(b.name)}</div>
-            <div class="birthday-meta">
-              <span>${formattedDob}</span>
-              ${b.relationship ? `<span class="separator"></span><span>${escapeHtml(b.relationship)}</span>` : ''}
-              ${age !== null ? `<span class="separator"></span><span>Age ${age}</span>` : ''}
-            </div>
-          </div>
-          ${badge}
-          <div class="birthday-actions">
-            <button class="btn-icon" onclick="openEditModal(${b.id})" title="Edit">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            </button>
-            <button class="btn-icon" onclick="handleDelete(${b.id}, '${escapeHtml(b.name).replace(/'/g, "\\'")}')" title="Delete" style="color: var(--accent-red);">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
+  birthdayList.innerHTML = sorted.map(b => {
+    const initials = getInitials(b.name);
+    const badge = b.daysUntil === 0 ? '<span class="badge badge-tomorrow">Today</span>' : (b.daysUntil <= 7 ? \`<span class="badge badge-upcoming">\${b.daysUntil} days</span>\` : '');
+    
+    return `
+      <div class="list-item">
+        <div class="avatar">${initials}</div>
+        <div class="item-info">
+          <div class="item-title">${escapeHtml(b.name)}</div>
+          <div class="item-meta">
+            <span>${formatDate(b.dob)}</span>
+            ${b.relationship ? \`<span class="dot"></span><span>\${escapeHtml(b.relationship)}</span>\` : ''}
           </div>
         </div>
-      `;
-    })
-    .join('');
+        ${badge}
+        <div style="display:flex;gap:4px;">
+          <button class="btn-icon" onclick="openEditModal(${b.id})" title="Edit">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon" onclick="handleDelete(${b.id}, '${escapeHtml(b.name).replace(/'/g, "\\'")}')" title="Delete">
+             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--destructive);"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function renderUpcoming(birthdays) {
-  const upcoming = birthdays
-    .filter((b) => b.daysUntil <= 30 && b.daysUntil >= 0)
-    .sort((a, b) => a.daysUntil - b.daysUntil);
+  const upcoming = birthdays.filter(b => b.daysUntil <= 30 && b.daysUntil >= 0).sort((a, b) => a.daysUntil - b.daysUntil);
 
   if (upcoming.length === 0) {
     upcomingList.innerHTML = `
       <div class="empty-state">
-        <span class="empty-icon">🎈</span>
-        <p>No upcoming birthdays in the next 30 days</p>
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <p>No upcoming</p>
+        <div class="sub">Next 30 days are clear.</div>
       </div>
     `;
     return;
   }
 
-  upcomingList.innerHTML = upcoming
-    .map((b) => {
-      const badgeStyle = getUpcomingStyle(b.daysUntil);
-      const label =
-        b.daysUntil === 0
-          ? 'TODAY!'
-          : b.daysUntil === 1
-          ? 'Tomorrow'
-          : `${b.daysUntil} days`;
-
-      return `
-        <div class="upcoming-item">
-          <div class="upcoming-days" style="background: ${badgeStyle.bg}; color: ${badgeStyle.color};">
-            <span class="upcoming-days-number">${b.daysUntil}</span>
-            <span class="upcoming-days-label">${b.daysUntil === 1 ? 'day' : 'days'}</span>
-          </div>
-          <div class="birthday-info">
-            <div class="birthday-name">${escapeHtml(b.name)}</div>
-            <div class="birthday-meta">
-              <span>${formatDate(b.dob)}</span>
-              ${b.relationship ? `<span class="separator"></span><span>${escapeHtml(b.relationship)}</span>` : ''}
-            </div>
+  upcomingList.innerHTML = upcoming.map(b => {
+    const initials = getInitials(b.name);
+    return `
+      <div class="list-item">
+        <div class="avatar">${initials}</div>
+        <div class="item-info">
+          <div class="item-title">${escapeHtml(b.name)}</div>
+          <div class="item-meta">
+            <span>${b.daysUntil === 0 ? 'Today' : (b.daysUntil === 1 ? 'Tomorrow' : b.daysUntil + ' days')}</span>
           </div>
         </div>
-      `;
-    })
-    .join('');
+      </div>
+    `;
+  }).join('');
 }
 
 function updateStats(birthdays) {
   statTotal.textContent = birthdays.length;
-
-  const upcoming30 = birthdays.filter((b) => b.daysUntil <= 30 && b.daysUntil >= 0);
-  statUpcoming.textContent = upcoming30.length;
-
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const thisMonth = birthdays.filter((b) => {
-    const month = parseInt(b.dob.split('-')[1]);
-    return month === currentMonth;
-  });
-  statThisMonth.textContent = thisMonth.length;
+  statUpcoming.textContent = birthdays.filter(b => b.daysUntil <= 30 && b.daysUntil >= 0).length;
+  const currentMonth = new Date().getMonth() + 1;
+  statThisMonth.textContent = birthdays.filter(b => parseInt(b.dob.split('-')[1]) === currentMonth).length;
 }
 
-// ── Modal ────────────────────────────────
+// ── Helpers ──────────────────────────────
 
 function openEditModal(id) {
-  const birthday = allBirthdays.find((b) => b.id === id);
-  if (!birthday) return;
-
-  document.getElementById('edit-id').value = birthday.id;
-  document.getElementById('edit-name').value = birthday.name;
-  document.getElementById('edit-dob').value = birthday.dob;
-  document.getElementById('edit-relationship').value = birthday.relationship || '';
-
+  const b = allBirthdays.find(b => b.id === id);
+  if (!b) return;
+  document.getElementById('edit-id').value = b.id;
+  document.getElementById('edit-name').value = b.name;
+  document.getElementById('edit-dob').value = b.dob;
+  document.getElementById('edit-relationship').value = b.relationship || '';
   editModal.classList.add('active');
 }
 
@@ -312,78 +266,13 @@ function closeModal() {
   editModal.classList.remove('active');
 }
 
-// ── Helpers ──────────────────────────────
-
-function getAvatarColor(name) {
-  const colors = [
-    'linear-gradient(135deg, #f59e0b, #d97706)',
-    'linear-gradient(135deg, #ec4899, #be185d)',
-    'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-    'linear-gradient(135deg, #10b981, #059669)',
-    'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-    'linear-gradient(135deg, #ef4444, #b91c1c)',
-    'linear-gradient(135deg, #06b6d4, #0891b2)',
-    'linear-gradient(135deg, #f97316, #c2410c)',
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-}
-
 function getInitials(name) {
-  return name
-    .split(' ')
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 }
 
 function formatDate(dob) {
-  const months = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-  ];
-  const [year, month, day] = dob.split('-').map(Number);
-  return `${months[month - 1]} ${day}, ${year}`;
-}
-
-function getAge(dob) {
-  const [year] = dob.split('-').map(Number);
-  if (year < 1900) return null;
-  const now = new Date();
-  return now.getFullYear() - year;
-}
-
-function getBadge(daysUntil) {
-  if (daysUntil === 0) {
-    return '<span class="birthday-badge badge-today">🎂 Today!</span>';
-  }
-  if (daysUntil === 1) {
-    return '<span class="birthday-badge badge-tomorrow">Tomorrow</span>';
-  }
-  if (daysUntil <= 7) {
-    return `<span class="birthday-badge badge-week">${daysUntil} days</span>`;
-  }
-  if (daysUntil <= 30) {
-    return `<span class="birthday-badge badge-month">${daysUntil} days</span>`;
-  }
-  return '';
-}
-
-function getUpcomingStyle(daysUntil) {
-  if (daysUntil === 0) {
-    return { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b' };
-  }
-  if (daysUntil === 1) {
-    return { bg: 'rgba(236, 72, 153, 0.15)', color: '#ec4899' };
-  }
-  if (daysUntil <= 7) {
-    return { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6' };
-  }
-  return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981' };
+  const [year, month, day] = dob.split('-');
+  return `${month}/${day}/${year}`;
 }
 
 function escapeHtml(str) {
@@ -400,10 +289,8 @@ function debounce(fn, ms) {
   };
 }
 
-function showToast(message, type = 'success') {
+function showToast(message) {
   toast.textContent = message;
-  toast.className = `toast show ${type}`;
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 3500);
+  toast.className = 'toast show';
+  setTimeout(() => toast.classList.remove('show'), 3000);
 }
